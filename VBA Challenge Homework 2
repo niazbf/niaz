@@ -1,0 +1,110 @@
+Sub stockcalculate()
+    ' Loop through each worksheet
+    For Each ws In Worksheets
+        ' Set dimensions
+        Dim ticker_symbol As String
+        Dim opening_price As Double
+        Dim closing_price As Double
+        Dim quarterly_change As Double
+        Dim percent_change As Double
+        Dim volume_total As Double
+        Dim lastrow As Long
+        Dim Summary_Table_Row As Integer
+        Dim greatest_increase As Double
+        Dim greatest_decrease As Double
+        Dim greatest_total_volume As Double
+        ' Initialize
+        Summary_Table_Row = 2
+        greatest_increase = -9999.99
+        greatest_decrease = 9999.99
+        greatest_total_volume = 0
+        ' Set title names
+        ws.Range("I1").Value = "Ticker Symbol"
+        ws.Range("J1").Value = "Volume Total"
+        ws.Range("K1").Value = "Quarterly Change"
+        ws.Range("L1").Value = "Percent Change"
+        ws.Range("N2").Value = "Greatest Increase"
+        ws.Range("N3").Value = "Greatest Decrease"
+        ws.Range("N4").Value = "Greatest Total Volume"
+        ws.Range("P1").Value = "Ticker"
+        ws.Range("Q1").Value = "Value"
+        ' Find the last row with data
+        lastrow = ws.Cells(ws.Rows.count, 1).End(xlUp).Row
+        ' Initialize variables
+        volume_total = 0
+        opening_price = 0
+        closing_price = 0
+        quarterly_change = 0
+        percent_change = 0
+        ' Loop through data
+        Dim i As Long
+        Dim start As Long
+        start = 2
+        For i = 2 To lastrow
+            ' Check if the ticker symbol has changed
+            If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+                ticker_symbol = ws.Cells(i, 1).Value
+                ' Set the closing price
+                closing_price = ws.Cells(i, 6).Value
+                ' Update the total volume
+                volume_total = volume_total + ws.Cells(i, 7).Value
+                ' Calculate quarterly change and percent change
+                quarterly_change = closing_price - opening_price
+                If opening_price > 0 Then
+                    percent_change = quarterly_change / opening_price
+                Else
+                    percent_change = 0
+                End If
+                ' Write values to summary table
+                ws.Range("I" & Summary_Table_Row).Value = ticker_symbol
+                ws.Range("J" & Summary_Table_Row).Value = volume_total
+                ws.Range("K" & Summary_Table_Row).Value = quarterly_change
+                ws.Range("L" & Summary_Table_Row).Value = percent_change
+                ' Set cell color based on quarterly change
+                If quarterly_change >= 0 Then
+                    ws.Range("K" & Summary_Table_Row).Interior.ColorIndex = 4
+                Else
+                    ws.Range("K" & Summary_Table_Row).Interior.ColorIndex = 3
+                End If
+                ' Update greatest values
+                If percent_change > greatest_increase Then
+                    greatest_increase = percent_change
+                    ws.Range("P2").Value = ticker_symbol
+                    ws.Range("Q2").Value = percent_change
+                End If
+                If percent_change < greatest_decrease Then
+                    greatest_decrease = percent_change
+                    ws.Range("P3").Value = ticker_symbol
+                    ws.Range("Q3").Value = percent_change
+                End If
+                If volume_total > greatest_total_volume Then
+                    greatest_total_volume = volume_total
+                    ws.Range("P4").Value = ticker_symbol
+                    ws.Range("Q4").Value = volume_total
+                End If
+                ' Move to the next row in the summary table
+
+Summary_Table_Row = Summary_Table_Row + 1
+                ' Reset variables for the next ticker
+                volume_total = 0
+                start = i + 1
+                opening_price = 0
+            Else
+                ' Accumulate volume total
+                volume_total = volume_total + ws.Cells(i, 7).Value
+                ' Set the opening price if it has not been set
+                If opening_price = 0 Then
+                    opening_price = ws.Cells(i, 3).Value
+                End If
+            End If
+        Next i
+    Next ws
+End Sub
+
+
+
+
+
+
+
+
